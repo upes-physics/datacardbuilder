@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Build and download structured course data as JSON." />
-    <title>Course JSON Builder</title>
+    <meta name="description" content="Package course resources into a ready-to-use datacard ZIP." />
+    <title>Datacard Builder</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700&display=swap" rel="stylesheet" />
@@ -12,18 +12,18 @@
   </head>
   <body>
     <header class="topbar">
-      <a class="brand" href="#" aria-label="Course JSON Builder home">
+      <a class="brand" href="#" aria-label="Datacard Builder home">
         <span class="brand-mark" aria-hidden="true">{ }</span>
-        <span>Course JSON Builder</span>
+        <span>Datacard Builder</span>
       </a>
       <span class="autosave"><span></span> Changes saved locally</span>
     </header>
 
     <main>
       <section class="hero">
-        <p class="eyebrow">COURSE DATA TOOL</p>
-        <h1>Build your course file,<br /><em>without writing JSON.</em></h1>
-        <p>Fill in the details below. We’ll structure everything and create a clean, ready-to-use JSON file for you.</p>
+        <p class="eyebrow">COURSE PACKAGING TOOL</p>
+        <h1>Build your course datacard,<br /><em>all in one package.</em></h1>
+        <p>Add the course details and resources below. We’ll package the datacard and its HTML files into one ready-to-use ZIP.</p>
       </section>
 
       <form id="course-form">
@@ -35,68 +35,44 @@
           </div>
         </section>
 
-        <section class="form-card" aria-labelledby="credits-heading">
-          <div class="section-heading"><span>02</span><div><h2 id="credits-heading">Credits</h2><p>Enter the credit distribution for the course.</p></div></div>
-          <div class="field-grid four-col">
-            <label>Lecture (L)<input name="credits.L" type="number" min="0" value="0" /></label>
-            <label>Tutorial (T)<input name="credits.T" type="number" min="0" value="0" /></label>
-            <label>Practical (P)<input name="credits.P" type="number" min="0" value="0" /></label>
-            <label>Total (C)<input name="credits.C" type="number" min="0" value="0" /></label>
-          </div>
-        </section>
-
-        <section class="form-card repeatable" data-section="objectives" aria-labelledby="objectives-heading">
-          <div class="section-heading"><span>03</span><div><h2 id="objectives-heading">Objectives</h2><p>What should this course set out to achieve?</p></div></div>
-          <div class="items"></div>
-          <button class="add-button" type="button" data-add="objectives">＋ Add objective</button>
-        </section>
-
-        <section class="form-card repeatable" data-section="outcomes" aria-labelledby="outcomes-heading">
-          <div class="section-heading"><span>04</span><div><h2 id="outcomes-heading">Outcomes</h2><p>Define the measurable outcomes students will gain.</p></div></div>
-          <div class="items"></div>
-          <button class="add-button" type="button" data-add="outcomes">＋ Add outcome</button>
-        </section>
-
-        <section class="form-card repeatable" data-section="syllabus" aria-labelledby="syllabus-heading">
-          <div class="section-heading"><span>05</span><div><h2 id="syllabus-heading">Syllabus</h2><p>Break the course into modules and topics.</p></div></div>
-          <div class="items"></div>
-          <button class="add-button" type="button" data-add="syllabus">＋ Add syllabus module</button>
-        </section>
-
         <section class="form-card repeatable" data-section="simulators" aria-labelledby="simulators-heading">
-          <div class="section-heading"><span>06</span><div><h2 id="simulators-heading">Simulators & resources</h2><p>Add useful tools and interactive learning links.</p></div></div>
-          <div class="items"></div>
+          <div class="section-heading"><span>02</span><div><h2 id="simulators-heading">Simulators &amp; resources</h2><p>Add useful links or upload the HTML file for each resource.</p></div></div>
+          <div class="items">
+            <div class="item resource-item">
+              <div class="item-title">Resource 1</div>
+              <button type="button" class="remove" aria-label="Remove resource">×</button>
+              <label>Name<input data-key="name" placeholder="e.g. Circuit simulator" /></label>
+              <label>Description<textarea data-key="desc" placeholder="Briefly describe this resource"></textarea></label>
+              <label>Link<input data-key="link" type="url" placeholder="https://…" /></label>
+              <label class="file-field">Upload HTML file<input data-key="file" type="file" accept=".html,.htm,text/html" /><small>Select the HTML file to include in the ZIP package.</small></label>
+            </div>
+          </div>
           <button class="add-button" type="button" data-add="simulators">＋ Add resource</button>
         </section>
 
-        <section class="form-card repeatable" data-section="lectureNotes" aria-labelledby="notes-heading">
-          <div class="section-heading"><span>07</span><div><h2 id="notes-heading">Lecture notes</h2><p>Attach titles and links for course materials.</p></div></div>
-          <div class="items"></div>
-          <button class="add-button" type="button" data-add="lectureNotes">＋ Add lecture note</button>
-        </section>
-
-        <section class="form-card" aria-labelledby="faculty-heading">
-          <div class="section-heading"><span>08</span><div><h2 id="faculty-heading">Faculty</h2><p>Who is teaching this course?</p></div></div>
-          <div class="field-grid two-col">
-            <label>Faculty name<input name="faculty.name" placeholder="e.g. Suvankar Roy Chowdhury" /></label>
-            <label>Email address<input name="faculty.email" type="email" placeholder="name@university.edu" /></label>
-          </div>
+        <section class="form-card" aria-labelledby="supporting-files-heading">
+          <div class="section-heading"><span>03</span><div><h2 id="supporting-files-heading">Supporting files <small>Optional</small></h2><p>Add any files required by your standalone HTML resources, such as JavaScript, CSS, images, or PDFs.</p></div></div>
+          <label class="file-field supporting-files-field">Choose supporting files
+            <input id="supporting-files" type="file" multiple />
+            <small>You can select multiple files of any type. They will be added to the ZIP but not to datacard.json.</small>
+          </label>
+          <ul id="supporting-file-list" class="file-list" aria-live="polite"></ul>
         </section>
 
         <div class="actions">
-          <div><strong>Ready to create your file?</strong><p>You can preview the structure before downloading.</p></div>
-          <button type="button" class="secondary" id="preview-button">Preview JSON</button>
-          <button type="submit" class="primary">Download JSON <span>↓</span></button>
+          <div><strong>Ready to create your package?</strong><p>Preview the datacard or download it with the uploaded HTML files.</p></div>
+          <button type="button" class="secondary" id="preview-button">Preview datacard</button>
+          <button type="submit" class="primary">Create ZIP <span>↓</span></button>
         </div>
       </form>
     </main>
 
     <dialog id="preview-dialog">
-      <div class="dialog-heading"><div><p class="eyebrow">LIVE PREVIEW</p><h2>Your course JSON</h2></div><button id="close-dialog" aria-label="Close preview">×</button></div>
+      <div class="dialog-heading"><div><p class="eyebrow">LIVE PREVIEW</p><h2>Your datacard.json</h2></div><button id="close-dialog" aria-label="Close preview">×</button></div>
       <pre><code id="json-preview"></code></pre>
       <button class="primary" id="copy-json">Copy JSON</button>
     </dialog>
-    <div id="toast" role="status" aria-live="polite">JSON copied to clipboard</div>
+    <div id="toast" role="status" aria-live="polite">Datacard copied to clipboard</div>
     <script src="script.js"></script>
   </body>
 </html>
