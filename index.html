@@ -43,8 +43,8 @@
               <button type="button" class="remove" aria-label="Remove resource">×</button>
               <label>Name<input data-key="name" placeholder="e.g. Circuit simulator" /></label>
               <label>Description<textarea data-key="desc" placeholder="Briefly describe this resource"></textarea></label>
-              <label>Link<input data-key="link" type="url" placeholder="https://…" /></label>
-              <label class="file-field">Upload HTML file<input data-key="file" type="file" accept=".html,.htm,text/html" /><small>Select the HTML file to include in the ZIP package.</small></label>
+              <label>Link<input data-key="link" placeholder="https://example.com or simulator.html" /><small>Enter an HTTPS URL or an HTML filename.</small></label>
+              <label class="file-field">Upload HTML file (optional)<input data-key="file" type="file" accept=".html,.htm,text/html" /><small>Only needed when you want to include the HTML file in the ZIP.</small></label>
             </div>
           </div>
           <button class="add-button" type="button" data-add="simulators">＋ Add resource</button>
@@ -52,9 +52,9 @@
 
         <section class="form-card" aria-labelledby="supporting-files-heading">
           <div class="section-heading"><span>03</span><div><h2 id="supporting-files-heading">Supporting files <small>Optional</small></h2><p>Add any files required by your standalone HTML resources, such as JavaScript, CSS, images, or PDFs.</p></div></div>
-          <label class="file-field supporting-files-field">Choose supporting files
+          <label class="file-field supporting-files-field">Add supporting files
             <input id="supporting-files" type="file" multiple />
-            <small>You can select multiple files of any type. They will be added to the ZIP but not to datacard.json.</small>
+            <small>Select one or more files, then use this picker again to add more. Any file type is accepted. Supporting files are added to the ZIP but not to datacard.json.</small>
           </label>
           <ul id="supporting-file-list" class="file-list" aria-live="polite"></ul>
         </section>

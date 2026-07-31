@@ -4,12 +4,13 @@ const preview = document.querySelector("#json-preview");
 const toast = document.querySelector("#toast");
 const supportingFilesInput = document.querySelector("#supporting-files");
 const supportingFileList = document.querySelector("#supporting-file-list");
+let supportingFiles = [];
 
 const resourceFields = [
   { key: "name", label: "Name", placeholder: "e.g. Circuit simulator" },
   { key: "desc", label: "Description", type: "textarea", placeholder: "Briefly describe this resource" },
-  { key: "link", label: "Link", type: "url", placeholder: "https://…" },
-  { key: "file", label: "Upload HTML file", type: "file" },
+  { key: "link", label: "Link", placeholder: "https://example.com or simulator.html" },
+  { key: "file", label: "Upload HTML file (optional)", type: "file" },
 ];
 
 function addResource(values = {}) {
@@ -33,13 +34,18 @@ function addResource(values = {}) {
         label.append(note);
       } else {
         const note = document.createElement("small");
-        note.textContent = "Select the HTML file to include in the ZIP package.";
+        note.textContent = "Only needed when you want to include the HTML file in the ZIP.";
         label.append(note);
       }
     } else {
       input.type = field.type || "text";
       input.placeholder = field.placeholder || "";
       input.value = values[field.key] ?? "";
+      if (field.key === "link") {
+        const note = document.createElement("small");
+        note.textContent = "Enter an HTTPS URL or an HTML filename.";
+        label.append(note);
+      }
     }
     label.append(input);
     item.append(label);
@@ -146,17 +152,57 @@ document.querySelector('[data-section="simulators"] .items').addEventListener("c
   save();
 });
 form.addEventListener("input", save);
-supportingFilesInput.addEventListener("change", () => {
+function validateResourceLinks() {
+  let valid = true;
+  document.querySelectorAll('[data-key="link"]').forEach((input) => {
+    const link = input.value.trim();
+    const isHttpsUrl = link.startsWith("https://") && (() => {
+      try {
+        return new URL(link).protocol === "https:";
+      } catch {
+        return false;
+      }
+    })();
+    const isHtmlFilename = /^[^/\\]+\.html?$/i.test(link);
+    input.setCustomValidity(link && !isHttpsUrl && !isHtmlFilename ? "Enter an HTTPS URL or an HTML filename such as simulator.html." : "");
+    if (!input.checkValidity()) valid = false;
+  });
+  return valid;
+}
+form.addEventListener("input", (event) => {
+  if (event.target.matches('[data-key="link"]')) validateResourceLinks();
+});
+function renderSupportingFiles() {
   supportingFileList.replaceChildren(
-    ...[...supportingFilesInput.files].map((file) => {
+    ...supportingFiles.map((file, index) => {
       const item = document.createElement("li");
-      item.textContent = file.name;
+      const name = document.createElement("span");
+      name.textContent = file.name;
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "remove-supporting-file";
+      remove.dataset.index = index;
+      remove.setAttribute("aria-label", `Remove ${file.name}`);
+      remove.textContent = "×";
+      item.append(name, remove);
       return item;
     }),
   );
+}
+supportingFilesInput.addEventListener("change", () => {
+  supportingFiles.push(...supportingFilesInput.files);
+  supportingFilesInput.value = "";
+  renderSupportingFiles();
+});
+supportingFileList.addEventListener("click", (event) => {
+  const removeButton = event.target.closest(".remove-supporting-file");
+  if (!removeButton) return;
+  supportingFiles.splice(Number(removeButton.dataset.index), 1);
+  renderSupportingFiles();
 });
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
+  validateResourceLinks();
   if (!form.reportValidity()) return;
 
   const datacard = buildDatacard();
@@ -178,7 +224,7 @@ form.addEventListener("submit", async (event) => {
     datacard.simulators[index].uploadFileLink = name;
     files.push({ name, data: file });
   });
-  [...supportingFilesInput.files].forEach((file) => {
+  supportingFiles.forEach((file) => {
     let name = file.name.replace(/[\\/]/g, "_");
     let suffix = 2;
     while (usedNames.has(name)) {
