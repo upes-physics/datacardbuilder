@@ -3,85 +3,187 @@ const dialog = document.querySelector("#preview-dialog");
 const preview = document.querySelector("#json-preview");
 const toast = document.querySelector("#toast");
 
-const definitions = {
-  objectives: [{ key: "value", label: "Objective", type: "textarea", placeholder: "Describe a course objective…" }],
-  outcomes: [
-    { key: "code", label: "Outcome code", placeholder: "e.g. CO1" },
-    { key: "statement", label: "Statement", type: "textarea", placeholder: "What will students be able to do?" },
-  ],
-  syllabus: [
-    { key: "title", label: "Module title", placeholder: "e.g. Programming with Python" },
-    { key: "lectureHours", label: "Lecture hours", type: "number", placeholder: "0" },
-    { key: "topics", label: "Topics", type: "textarea", placeholder: "List the topics covered…" },
-  ],
-  simulators: [
-    { key: "name", label: "Resource name", placeholder: "e.g. Python" },
-    { key: "desc", label: "Description", placeholder: "Briefly describe this resource" },
-    { key: "link", label: "Link", placeholder: "https://…" },
-  ],
-  lectureNotes: [
-    { key: "title", label: "Note title", placeholder: "e.g. Week 1 notes" },
-    { key: "link", label: "Link", placeholder: "https://…" },
-  ],
-};
+const resourceFields = [
+  { key: "name", label: "Name", placeholder: "e.g. Circuit simulator" },
+  { key: "desc", label: "Description", type: "textarea", placeholder: "Briefly describe this resource" },
+  { key: "link", label: "Link", type: "url", placeholder: "https://…" },
+  { key: "file", label: "Upload file link", type: "file" },
+];
 
-function addItem(section, values = {}) {
-  const container = document.querySelector(`[data-section="${section}"] .items`);
+function addResource(values = {}) {
+  const container = document.querySelector('[data-section="simulators"] .items');
   const item = document.createElement("div");
-  const fields = definitions[section];
-  item.className = `item ${fields.length === 2 ? "two" : fields.length === 3 ? "three" : ""}`;
-  item.innerHTML = `<div class="item-title">${section === "syllabus" ? "Module" : section.slice(0, -1) || "item"} ${container.children.length + 1}</div><button type="button" class="remove" aria-label="Remove item">×</button>`;
-  fields.forEach((field) => {
+  item.className = "item resource-item";
+  item.innerHTML = `<div class="item-title">Resource ${container.children.length + 1}</div><button type="button" class="remove" aria-label="Remove resource">×</button>`;
+
+  resourceFields.forEach((field) => {
     const label = document.createElement("label");
     label.textContent = field.label;
     const input = document.createElement(field.type === "textarea" ? "textarea" : "input");
     input.dataset.key = field.key;
-    input.placeholder = field.placeholder || "";
-    if (field.type === "number") { input.type = "number"; input.min = "0"; }
-    input.value = values[field.key] ?? "";
-    label.append(input); item.append(label);
+    if (field.type === "file") {
+      input.type = "file";
+      input.accept = ".html,.htm,text/html";
+      if (values.fileName) {
+        const note = document.createElement("small");
+        note.textContent = `Previously selected: ${values.fileName} (please select it again to include it)`;
+        label.append(note);
+      }
+    } else {
+      input.type = field.type || "text";
+      input.placeholder = field.placeholder || "";
+      input.value = values[field.key] ?? "";
+    }
+    label.append(input);
+    item.append(label);
   });
-  item.querySelector(".remove").addEventListener("click", () => { item.remove(); renumber(container); save(); });
+
+  item.querySelector(".remove").addEventListener("click", () => {
+    item.remove();
+    renumberResources();
+    save();
+  });
   container.append(item);
 }
 
-function renumber(container) {
-  [...container.children].forEach((item, index) => { item.querySelector(".item-title").textContent = item.querySelector(".item-title").textContent.replace(/\d+$/, index + 1); });
-}
-
-function buildJSON() {
-  const value = (name) => form.elements[name]?.value.trim() || "";
-  const result = {
-    courseCode: value("courseCode"), courseName: value("courseName"),
-    credits: { L: Number(value("credits.L")), T: Number(value("credits.T")), P: Number(value("credits.P")), C: Number(value("credits.C")) },
-  };
-  Object.keys(definitions).forEach((section) => {
-    result[section] = [...document.querySelectorAll(`[data-section="${section}"] .item`)].map((item) => {
-      const entry = {};
-      item.querySelectorAll("[data-key]").forEach((input) => { entry[input.dataset.key] = input.type === "number" ? Number(input.value) : input.value.trim(); });
-      return section === "objectives" ? entry.value : entry;
-    });
+function renumberResources() {
+  document.querySelectorAll(".resource-item .item-title").forEach((title, index) => {
+    title.textContent = `Resource ${index + 1}`;
   });
-  result.faculty = { name: value("faculty.name"), email: value("faculty.email") };
-  return result;
 }
 
-function save() { localStorage.setItem("course-json-builder", JSON.stringify(buildJSON())); }
-document.querySelectorAll("[data-add]").forEach((button) => button.addEventListener("click", () => { addItem(button.dataset.add); save(); }));
-form.addEventListener("input", save);
-form.addEventListener("submit", (event) => {
-  event.preventDefault(); if (!form.reportValidity()) return;
-  const blob = new Blob([JSON.stringify(buildJSON(), null, 2)], { type: "application/json" });
-  const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `${form.elements.courseCode.value.trim() || "course"}.json`; link.click(); URL.revokeObjectURL(link.href);
-});
-document.querySelector("#preview-button").addEventListener("click", () => { preview.textContent = JSON.stringify(buildJSON(), null, 2); dialog.showModal(); });
-document.querySelector("#close-dialog").addEventListener("click", () => dialog.close());
-document.querySelector("#copy-json").addEventListener("click", async () => { await navigator.clipboard.writeText(preview.textContent); toast.classList.add("show"); setTimeout(() => toast.classList.remove("show"), 1800); });
+function buildDatacard() {
+  const resources = [...document.querySelectorAll(".resource-item")].map((item) => {
+    const input = (key) => item.querySelector(`[data-key="${key}"]`);
+    const file = input("file").files[0];
+    return {
+      name: input("name").value.trim(),
+      desc: input("desc").value.trim(),
+      link: input("link").value.trim(),
+      uploadFileLink: file?.name || "",
+    };
+  });
+  return {
+    courseCode: form.elements.courseCode.value.trim(),
+    courseName: form.elements.courseName.value.trim(),
+    simulators: resources,
+  };
+}
 
-const saved = JSON.parse(localStorage.getItem("course-json-builder") || "null");
+function save() {
+  localStorage.setItem("datacard-builder", JSON.stringify(buildDatacard()));
+}
+
+// Build a standards-compliant, uncompressed ZIP so the app remains dependency-free.
+const encoder = new TextEncoder();
+
+function crc32(bytes) {
+  let crc = 0xffffffff;
+  for (const byte of bytes) {
+    crc ^= byte;
+    for (let bit = 0; bit < 8; bit += 1) crc = (crc >>> 1) ^ (0xedb88320 & -(crc & 1));
+  }
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+function zipPart(signature, size) {
+  const bytes = new Uint8Array(size);
+  new DataView(bytes.buffer).setUint32(0, signature, true);
+  return { bytes, view: new DataView(bytes.buffer) };
+}
+
+async function createZip(files) {
+  const localParts = [];
+  const centralParts = [];
+  let offset = 0;
+
+  for (const file of files) {
+    const name = encoder.encode(file.name);
+    const data = file.data instanceof Uint8Array ? file.data : new Uint8Array(await file.data.arrayBuffer());
+    const checksum = crc32(data);
+    const local = zipPart(0x04034b50, 30 + name.length);
+    local.view.setUint16(4, 20, true);
+    local.view.setUint32(14, checksum, true);
+    local.view.setUint32(18, data.length, true);
+    local.view.setUint32(22, data.length, true);
+    local.view.setUint16(26, name.length, true);
+    local.bytes.set(name, 30);
+    localParts.push(local.bytes, data);
+
+    const central = zipPart(0x02014b50, 46 + name.length);
+    central.view.setUint16(4, 20, true);
+    central.view.setUint16(6, 20, true);
+    central.view.setUint32(16, checksum, true);
+    central.view.setUint32(20, data.length, true);
+    central.view.setUint32(24, data.length, true);
+    central.view.setUint16(28, name.length, true);
+    central.view.setUint32(42, offset, true);
+    central.bytes.set(name, 46);
+    centralParts.push(central.bytes);
+    offset += local.bytes.length + data.length;
+  }
+
+  const centralSize = centralParts.reduce((total, part) => total + part.length, 0);
+  const end = zipPart(0x06054b50, 22);
+  end.view.setUint16(8, files.length, true);
+  end.view.setUint16(10, files.length, true);
+  end.view.setUint32(12, centralSize, true);
+  end.view.setUint32(16, offset, true);
+  return new Blob([...localParts, ...centralParts, end.bytes], { type: "application/zip" });
+}
+
+document.querySelector("[data-add]").addEventListener("click", () => {
+  addResource();
+  save();
+});
+form.addEventListener("input", save);
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!form.reportValidity()) return;
+
+  const datacard = buildDatacard();
+  const files = [];
+  const usedNames = new Set(["datacard.json"]);
+  document.querySelectorAll('[data-key="file"]').forEach((input, index) => {
+    const file = input.files[0];
+    if (!file) return;
+    let name = file.name.replace(/[\\/]/g, "_");
+    let suffix = 2;
+    while (usedNames.has(name)) {
+      const dot = name.lastIndexOf(".");
+      const base = dot > 0 ? name.slice(0, dot) : name;
+      const ext = dot > 0 ? name.slice(dot) : "";
+      name = `${base}-${suffix}${ext}`;
+      suffix += 1;
+    }
+    usedNames.add(name);
+    datacard.simulators[index].uploadFileLink = name;
+    files.push({ name, data: file });
+  });
+  files.unshift({ name: "datacard.json", data: encoder.encode(JSON.stringify(datacard, null, 2)) });
+  const zip = await createZip(files);
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(zip);
+  link.download = `${datacard.courseCode}.zip`;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(link.href), 0);
+});
+
+document.querySelector("#preview-button").addEventListener("click", () => {
+  preview.textContent = JSON.stringify(buildDatacard(), null, 2);
+  dialog.showModal();
+});
+document.querySelector("#close-dialog").addEventListener("click", () => dialog.close());
+document.querySelector("#copy-json").addEventListener("click", async () => {
+  await navigator.clipboard.writeText(preview.textContent);
+  toast.classList.add("show");
+  setTimeout(() => toast.classList.remove("show"), 1800);
+});
+
+const saved = JSON.parse(localStorage.getItem("datacard-builder") || "null");
 if (saved) {
-  ["courseCode", "courseName"].forEach((key) => { form.elements[key].value = saved[key] || ""; });
-  Object.entries(saved.credits || {}).forEach(([key, val]) => { form.elements[`credits.${key}`].value = val; });
-  Object.keys(definitions).forEach((section) => (saved[section] || []).forEach((entry) => addItem(section, section === "objectives" ? { value: entry } : entry)));
-  Object.entries(saved.faculty || {}).forEach(([key, val]) => { form.elements[`faculty.${key}`].value = val; });
-} else { addItem("objectives"); addItem("outcomes"); addItem("syllabus"); }
+  form.elements.courseCode.value = saved.courseCode || "";
+  form.elements.courseName.value = saved.courseName || "";
+  (saved.simulators || []).forEach((resource) => addResource({ ...resource, fileName: resource.uploadFileLink }));
+}
+if (!document.querySelector(".resource-item")) addResource();

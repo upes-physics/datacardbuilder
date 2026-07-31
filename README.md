@@ -1,6 +1,6 @@
-# Course JSON Builder
+# Datacard Builder
 
-A dependency-free webpage for creating structured course JSON files through a friendly form. It supports repeatable objectives, outcomes, syllabus modules, simulators, and lecture notes; provides a live preview; saves drafts locally; and downloads valid JSON.
+A dependency-free webpage for packaging course datacards. Enter a course code and name, add simulator or resource details, and optionally attach HTML files. The builder downloads a `<courseCode>.zip` containing `datacard.json` and every attached HTML file.
 
 ## Run locally
 
