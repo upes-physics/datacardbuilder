@@ -2,12 +2,14 @@ const form = document.querySelector("#course-form");
 const dialog = document.querySelector("#preview-dialog");
 const preview = document.querySelector("#json-preview");
 const toast = document.querySelector("#toast");
+const supportingFilesInput = document.querySelector("#supporting-files");
+const supportingFileList = document.querySelector("#supporting-file-list");
 
 const resourceFields = [
   { key: "name", label: "Name", placeholder: "e.g. Circuit simulator" },
   { key: "desc", label: "Description", type: "textarea", placeholder: "Briefly describe this resource" },
   { key: "link", label: "Link", type: "url", placeholder: "https://…" },
-  { key: "file", label: "Upload file link", type: "file" },
+  { key: "file", label: "Upload HTML file", type: "file" },
 ];
 
 function addResource(values = {}) {
@@ -22,11 +24,16 @@ function addResource(values = {}) {
     const input = document.createElement(field.type === "textarea" ? "textarea" : "input");
     input.dataset.key = field.key;
     if (field.type === "file") {
+      label.className = "file-field";
       input.type = "file";
       input.accept = ".html,.htm,text/html";
       if (values.fileName) {
         const note = document.createElement("small");
-        note.textContent = `Previously selected: ${values.fileName} (please select it again to include it)`;
+        note.textContent = `Previously selected: ${values.fileName}. Select it again to include it in the ZIP.`;
+        label.append(note);
+      } else {
+        const note = document.createElement("small");
+        note.textContent = "Select the HTML file to include in the ZIP package.";
         label.append(note);
       }
     } else {
@@ -38,11 +45,6 @@ function addResource(values = {}) {
     item.append(label);
   });
 
-  item.querySelector(".remove").addEventListener("click", () => {
-    item.remove();
-    renumberResources();
-    save();
-  });
   container.append(item);
 }
 
@@ -136,7 +138,23 @@ document.querySelector("[data-add]").addEventListener("click", () => {
   addResource();
   save();
 });
+document.querySelector('[data-section="simulators"] .items').addEventListener("click", (event) => {
+  const removeButton = event.target.closest(".remove");
+  if (!removeButton) return;
+  removeButton.closest(".resource-item").remove();
+  renumberResources();
+  save();
+});
 form.addEventListener("input", save);
+supportingFilesInput.addEventListener("change", () => {
+  supportingFileList.replaceChildren(
+    ...[...supportingFilesInput.files].map((file) => {
+      const item = document.createElement("li");
+      item.textContent = file.name;
+      return item;
+    }),
+  );
+});
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
   if (!form.reportValidity()) return;
@@ -158,6 +176,19 @@ form.addEventListener("submit", async (event) => {
     }
     usedNames.add(name);
     datacard.simulators[index].uploadFileLink = name;
+    files.push({ name, data: file });
+  });
+  [...supportingFilesInput.files].forEach((file) => {
+    let name = file.name.replace(/[\\/]/g, "_");
+    let suffix = 2;
+    while (usedNames.has(name)) {
+      const dot = name.lastIndexOf(".");
+      const base = dot > 0 ? name.slice(0, dot) : name;
+      const ext = dot > 0 ? name.slice(dot) : "";
+      name = `${base}-${suffix}${ext}`;
+      suffix += 1;
+    }
+    usedNames.add(name);
     files.push({ name, data: file });
   });
   files.unshift({ name: "datacard.json", data: encoder.encode(JSON.stringify(datacard, null, 2)) });
@@ -184,6 +215,7 @@ const saved = JSON.parse(localStorage.getItem("datacard-builder") || "null");
 if (saved) {
   form.elements.courseCode.value = saved.courseCode || "";
   form.elements.courseName.value = saved.courseName || "";
+  document.querySelector('[data-section="simulators"] .items').replaceChildren();
   (saved.simulators || []).forEach((resource) => addResource({ ...resource, fileName: resource.uploadFileLink }));
 }
 if (!document.querySelector(".resource-item")) addResource();

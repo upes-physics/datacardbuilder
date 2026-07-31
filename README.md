@@ -1,6 +1,6 @@
 # Datacard Builder
 
-A dependency-free webpage for packaging course datacards. Enter a course code and name, add simulator or resource details, and optionally attach HTML files. The builder downloads a `<courseCode>.zip` containing `datacard.json` and every attached HTML file.
+A dependency-free webpage for packaging course datacards. Enter a course code and name, add simulator or resource details, and optionally attach HTML files and any supporting assets they need. The builder downloads a `<courseCode>.zip` containing `datacard.json`, every attached HTML file, and all selected supporting files. Supporting files are packaged only and are not listed in the JSON.
 
 ## Run locally
 

@@ -37,8 +37,26 @@
 
         <section class="form-card repeatable" data-section="simulators" aria-labelledby="simulators-heading">
           <div class="section-heading"><span>02</span><div><h2 id="simulators-heading">Simulators &amp; resources</h2><p>Add useful links or upload the HTML file for each resource.</p></div></div>
-          <div class="items"></div>
+          <div class="items">
+            <div class="item resource-item">
+              <div class="item-title">Resource 1</div>
+              <button type="button" class="remove" aria-label="Remove resource">×</button>
+              <label>Name<input data-key="name" placeholder="e.g. Circuit simulator" /></label>
+              <label>Description<textarea data-key="desc" placeholder="Briefly describe this resource"></textarea></label>
+              <label>Link<input data-key="link" type="url" placeholder="https://…" /></label>
+              <label class="file-field">Upload HTML file<input data-key="file" type="file" accept=".html,.htm,text/html" /><small>Select the HTML file to include in the ZIP package.</small></label>
+            </div>
+          </div>
           <button class="add-button" type="button" data-add="simulators">＋ Add resource</button>
+        </section>
+
+        <section class="form-card" aria-labelledby="supporting-files-heading">
+          <div class="section-heading"><span>03</span><div><h2 id="supporting-files-heading">Supporting files <small>Optional</small></h2><p>Add any files required by your standalone HTML resources, such as JavaScript, CSS, images, or PDFs.</p></div></div>
+          <label class="file-field supporting-files-field">Choose supporting files
+            <input id="supporting-files" type="file" multiple />
+            <small>You can select multiple files of any type. They will be added to the ZIP but not to datacard.json.</small>
+          </label>
+          <ul id="supporting-file-list" class="file-list" aria-live="polite"></ul>
         </section>
 
         <div class="actions">
