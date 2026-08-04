@@ -74,6 +74,10 @@ function buildDatacard() {
   return {
     courseCode: form.elements.courseCode.value.trim(),
     courseName: form.elements.courseName.value.trim(),
+    faculty: {
+      name: "",
+      email: "",
+    },
     simulators: resources,
   };
 }
