@@ -74,6 +74,8 @@ function buildDatacard() {
   return {
     courseCode: form.elements.courseCode.value.trim(),
     courseName: form.elements.courseName.value.trim(),
+    stream: form.elements.stream.value,
+    semester: form.elements.semester.value,
     faculty: {
       name: "",
       email: "",
@@ -265,6 +267,8 @@ const saved = JSON.parse(localStorage.getItem("datacard-builder") || "null");
 if (saved) {
   form.elements.courseCode.value = saved.courseCode || "";
   form.elements.courseName.value = saved.courseName || "";
+  form.elements.stream.value = saved.stream || "BSc Physics";
+  form.elements.semester.value = saved.semester || "1";
   document.querySelector('[data-section="simulators"] .items').replaceChildren();
   (saved.simulators || []).forEach((resource) => addResource({ ...resource, fileName: resource.uploadFileLink }));
 }
