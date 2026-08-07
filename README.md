@@ -9,3 +9,10 @@ python3 -m http.server 8000
 ```
 
 Then open `http://localhost:8000`.
+
+## Deploy to GitHub Pages
+
+The `Deploy static site to Pages` workflow publishes the site whenever a commit
+lands on `main`. In the repository's **Settings → Pages**, set **Source** to
+**GitHub Actions**. The workflow can also be started manually from the Actions
+tab.
